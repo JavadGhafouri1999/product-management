@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: product-management
+
+# ── Database & Migrations (postgresql + Flyway) ───────────────────────────────────────
+  datasource:
+    # Reading from environment variables - fallback to the default values if not set
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/mydatabase}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+    # Hikari for pool tuning, in case we have a high throughput API - usually below 100 is good enough
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+
+  jpa:
+    # Hibernate only should do validation and not updating tables - flyway does that
+    # flyway handles schema changes and migrations, hibernate validate entities to match the schema
+    hibernate:
+      ddl-auto: validate
+
+    # Prevent from hidden DB calls during JSON-Serialization
+    open-in-view: false
+
+    show-sql: true
+
+    properties:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+# ── Elasticsearch ─────────────────────────────────────────────────────────────────────
+  elasticsearch:
+    password: ${ELASTIC_PASSWORD}
+    username: ${ELASTIC_USER}
+    uris: ${ES_URIS:http://localhost:9200 }
+
+
+# ── Rabbitmq ──────────────────────────────────────────────────────────────────────────
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:myuser}
+    password: ${RABBITMQ_PASSWORD:secret}
+
+# ── Caching (redis) ───────────────────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  cache:
+    type: redis
+
+# ── Actuator (health checks) ──────────────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# ── API Documentation (springdoc OpenAPI) ─────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v1/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    # Groups endpoints by tag (usually your Controller names)
+    operations-sorter: method
