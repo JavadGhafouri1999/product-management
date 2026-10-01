@@ -28,6 +28,7 @@
         <!-- Explicit versions for third-party libraries to ensure consistency -->
         <mapstruct.version>1.6.2</mapstruct.version>
         <springdoc.version>3.1.0</springdoc.version>
+        <elasticsearch.version>8.13.4</elasticsearch.version>
     </properties>
 
     <!-- ================================================================= -->
@@ -84,13 +85,9 @@
         <!-- ───────────────────────────────────────────────────────────── -->
         <!-- Elasticsearch: Spring Data integration for search indexing -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-        </dependency>
-        <!-- Low-level Elasticsearch client (often required alongside Spring Data) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-elasticsearch</artifactId>
+            <groupId>co.elastic.clients</groupId>
+            <artifactId>elasticsearch-java</artifactId>
+            <version>8.13.4</version>
         </dependency>
         <!-- RabbitMQ: Spring AMQP for event-driven messaging -->
         <dependency>
