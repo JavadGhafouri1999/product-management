@@ -1,10 +1,13 @@
 package com.example.productmanagement.category.entity;
 
 import jakarta.persistence.*;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -18,11 +21,13 @@ import java.util.UUID;
 public class Category {
 
   @Id
+  @Generated
+  @ColumnDefault("gen_random_uuid()")
   @Column(nullable = false)
   private UUID id;
 
-  @Column(nullable = false, length = 100)
   @Setter
+  @Column(nullable = false, length = 100)
   private String name;
 
   // Meaning : This category has one parent. Find it by looking at my own parent_id column.
@@ -43,10 +48,13 @@ public class Category {
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;
 
-  @CreationTimestamp
+  @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private OffsetDateTime updatedAt;
 
+  // ┌──────────────────────────────────────────────────────────┐
+  // │                       Helper Class                       │
+  // └──────────────────────────────────────────────────────────┘
   // The key word "this" pointing to the current Parent Category that wants to add/remove a child category.
   public void addChild(Category child) {
 	children.add(child);

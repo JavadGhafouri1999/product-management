@@ -64,4 +64,4 @@ CREATE INDEX idx_categories_parent_id
 -- The second "Accessories" is not allowed.
 ALTER TABLE categories
     ADD CONSTRAINT uq_categories_name_parent
-        UNIQUE (name, parent_id);
+        UNIQUE NULLS NOT DISTINCT (name, parent_id);
