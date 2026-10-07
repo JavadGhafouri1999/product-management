@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -20,6 +21,7 @@ public class CategoryService {
 
   private final CategoryRepository categoryRepo;
 
+  //* ── Create Category ────────────────────────────────────────────────────────────────
   @Transactional
   public CategoryResponseDto createCategory(CategoryRequestDto request) {
 
@@ -55,6 +57,7 @@ public class CategoryService {
 	return CategoryMapper.toResponse(savedCategory);
   }
 
+  //* ── Get Category By UUID ───────────────────────────────────────────────────────────
   @Transactional(readOnly = true)
   public CategoryResponseDto getCategoryById(UUID categoryUUID) {
 
@@ -64,12 +67,43 @@ public class CategoryService {
 	return CategoryMapper.toResponse(foundCategoryById);
   }
 
+  //* ── Get Child Categories With Parent ID ────────────────────────────────────────────
+  @Transactional(readOnly = true)
+  public List<CategoryResponseDto> getChildrenByParentId(UUID parentUUID) {
+
+	// simplified - If it doesn't exist just return empty list instead of error
+	List<Category> children = categoryRepo.findAllByParentId(parentUUID);
+
+	return children.stream()
+			.map(CategoryMapper::toResponse)
+			.toList();
+  }
+
+  // ── Get All The Main Categories ─────────────────────────────────────────────────────
+  @Transactional(readOnly = true)
+  public List<CategoryResponseDto> getRootCategories() {
+
+	List<Category> allCategories = categoryRepo.findAllByParentIsNull();
+
+	return allCategories.stream()
+			.map(CategoryMapper::toResponse)
+			.toList();
+  }
+
+  // ── Get Category By Name And Parent ID ──────────────────────────────────────────────
+  // This is For when the frontend explicitly needs exact lookups by name + parent
   @Transactional(readOnly = true)
   public CategoryResponseDto getCategoryByNameAndParent(String name, UUID parentId) {
+	Category foundCategory;
 
-	Category foundCategoryByName = categoryRepo.findByNameAndParentId(name, parentId)
-			.orElseThrow(() -> CategoryNotFound.byName(name));
+	if (parentId == null) {
+	  foundCategory = categoryRepo.findByNameAndParentIsNull(name)
+			  .orElseThrow(() -> CategoryNotFound.byName(name));
+	} else {
+	  foundCategory = categoryRepo.findByNameAndParentId(name, parentId)
+			  .orElseThrow(() -> CategoryNotFound.byName(name));
+	}
 
-	return CategoryMapper.toResponse(foundCategoryByName);
+	return CategoryMapper.toResponse(foundCategory);
   }
 }
