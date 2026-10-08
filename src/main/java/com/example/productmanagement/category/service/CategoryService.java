@@ -141,7 +141,7 @@ public class CategoryService {
 			.toList();
   }
 
-  //* ── Get All The Main Categories ─────────────────────────────────────────────────────
+  //* ── Get All The Main Categories ────────────────────────────────────────────────────
   @Transactional(readOnly = true)
   public List<CategoryResponseDto> getRootCategories() {
 
@@ -152,7 +152,7 @@ public class CategoryService {
 			.toList();
   }
 
-  //* ── Get Category By Name And Parent ID ──────────────────────────────────────────────
+  //* ── Get Category By Name And Parent ID ─────────────────────────────────────────────
   // This is For when the frontend explicitly needs exact lookups by name + parent
   @Transactional(readOnly = true)
   public CategoryResponseDto getCategoryByNameAndParent(String name, UUID parentId) {
@@ -177,7 +177,6 @@ public class CategoryService {
 	  if (current.getId().equals(category.getId())) {
 		throw new IllegalArgumentException("A category cannot be moved under one of its descendants.");
 	  }
-
 	  current = current.getParent();
 	}
   }
