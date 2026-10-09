@@ -18,6 +18,8 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
   Optional<Category> findByNameAndParentIsNull(String name);
 
+  Optional<Category> findByName(String name);
+
   // Find if a category has children
   boolean existsByParentId(UUID parentId);
 

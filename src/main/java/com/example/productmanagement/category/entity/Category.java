@@ -41,7 +41,7 @@ public class Category {
   // Meaning : This category has many children. Find them by looking at other rows whose parent_id points to me.
   // OneToMany - Because one parent can have many children. One → Many.
   // Without mappedBy, JPA would think @OneToMany needs its own join table or foreign key column.
-  @OneToMany(mappedBy = "parent", orphanRemoval = true, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "parent")
   private Set<Category> children = new HashSet<>();
 
   @CreationTimestamp

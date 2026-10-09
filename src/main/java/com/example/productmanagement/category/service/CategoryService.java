@@ -65,6 +65,26 @@ public class CategoryService {
 	Category category = categoryRepo.findById(categoryId)
 			.orElseThrow(() -> CategoryNotFound.byId(categoryId));
 
+	List<String> allChildren = category.getChildren()
+			.stream().map(Category::getName).toList();
+
+	if (allChildren.contains(request.name())) {
+	  throw new DuplicateCategory(request.name());
+	}
+
+	// Check Name Uniqueness (NEW LOGIC)
+	boolean nameAlreadyExists;
+	// first check if it's a root category or not
+	if (request.parentId() != null) {
+	  nameAlreadyExists = categoryRepo.existsByNameAndParentId(request.name(), request.parentId());
+	} else {
+	  nameAlreadyExists = categoryRepo.existsByNameAndParentIsNull(request.name());
+	}
+
+	if (nameAlreadyExists) {
+	  throw new DuplicateCategory(request.name());
+	}
+
 	// Update the Parent
 	if (request.parentId() != null) {
 	  // Prevent circular hierarchy
@@ -93,7 +113,7 @@ public class CategoryService {
 	// Update the Name
 	category.setName(request.name());
 
-	// Save the updated category
+	// Save the updated category and return it
 	Category savedCategory = categoryRepo.save(category);
 	return CategoryMapper.toResponse(savedCategory);
   }
