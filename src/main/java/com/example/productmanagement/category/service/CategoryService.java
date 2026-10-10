@@ -65,6 +65,18 @@ public class CategoryService {
 	Category category = categoryRepo.findById(categoryId)
 			.orElseThrow(() -> CategoryNotFound.byId(categoryId));
 
+	// Check for duplicate names, excluding the category itself
+	boolean nameAlreadyExists;
+	if (request.parentId() == null) {
+	  nameAlreadyExists = categoryRepo.existsByNameAndParentIsNullAndIdNot(request.name(), categoryId);
+	} else {
+	  nameAlreadyExists = categoryRepo.existsByNameAndParentIdAndIdNot(request.name(), request.parentId(), categoryId);
+	}
+
+	if (nameAlreadyExists) {
+	  throw new DuplicateCategory(request.name());
+	}
+
 	// Update the Parent
 	if (request.parentId() != null) {
 	  // Prevent circular hierarchy

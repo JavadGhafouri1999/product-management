@@ -29,4 +29,9 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
   // Find a category by name that is a root category
   boolean existsByNameAndParentIsNull(String name);
+
+  // For UPDATE (The row exists, so we must exclude its own ID)
+  boolean existsByNameAndParentIdAndIdNot(String name, UUID parentId, UUID id);
+
+  boolean existsByNameAndParentIsNullAndIdNot(String name, UUID id);
 }
