@@ -10,6 +10,8 @@ import com.example.productmanagement.exception.CategoryNotFound;
 import com.example.productmanagement.exception.DuplicateCategory;
 import com.example.productmanagement.exception.ParentCategoryNotFound;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +24,12 @@ public class CategoryService {
 
   private final CategoryRepository categoryRepo;
 
+  private final CategoryMapper categoryMapper;
   //! ═════════════════════════════ Transactional Services ══════════════════════════════
 
   //* ── Create Category ────────────────────────────────────────────────────────────────
   @Transactional
+  @CacheEvict(cacheNames = "categories", allEntries = true) // Clear cache on write (new category)
   public CategoryResponseDto createCategory(CategoryRequestDto request) {
 
 	// If parent provided in request check if exist
@@ -55,11 +59,12 @@ public class CategoryService {
 	// Save to database
 	Category savedCategory = categoryRepo.save(category);
 
-	return CategoryMapper.toResponse(savedCategory);
+	return categoryMapper.toResponse(savedCategory);
   }
 
   //* ── Update Category ────────────────────────────────────────────────────────────────
   @Transactional
+  @CacheEvict(cacheNames = "categories", allEntries = true)
   public CategoryResponseDto updateCategory(UUID categoryId, CategoryRequestDto request) {
 	// Search for the category
 	Category category = categoryRepo.findById(categoryId)
@@ -107,11 +112,12 @@ public class CategoryService {
 
 	// Save the updated category
 	Category savedCategory = categoryRepo.save(category);
-	return CategoryMapper.toResponse(savedCategory);
+	return categoryMapper.toResponse(savedCategory);
   }
 
   //* ── Delete Category ────────────────────────────────────────────────────────────────
   @Transactional
+  @CacheEvict(cacheNames = "categories", allEntries = true)
   public void deleteCategory(UUID categoryId) {
 
 	// Search for the category
@@ -133,40 +139,45 @@ public class CategoryService {
 
   //* ── Get Category By UUID ───────────────────────────────────────────────────────────
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "categories", key = "#categoryUUID")
   public CategoryResponseDto getCategoryById(UUID categoryUUID) {
 
 	Category foundCategoryById = categoryRepo.findById(categoryUUID)
 			.orElseThrow(() -> CategoryNotFound.byId(categoryUUID));
 
-	return CategoryMapper.toResponse(foundCategoryById);
+	return categoryMapper.toResponse(foundCategoryById);
   }
 
   //* ── Get Child Categories With Parent ID ────────────────────────────────────────────
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "categories", key = "'children:' + #parentUUID")
   public List<CategoryResponseDto> getChildrenByParentId(UUID parentUUID) {
 
 	// simplified - If it doesn't exist just return empty list instead of error
 	List<Category> children = categoryRepo.findAllByParentId(parentUUID);
 
 	return children.stream()
-			.map(CategoryMapper::toResponse)
+			.map(categoryMapper::toResponse)
 			.toList();
   }
 
   //* ── Get All The Main Categories ────────────────────────────────────────────────────
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "categories", key = "'roots'")
   public List<CategoryResponseDto> getRootCategories() {
 
 	List<Category> allCategories = categoryRepo.findAllByParentIsNull();
 
 	return allCategories.stream()
-			.map(CategoryMapper::toResponse)
+			.map(categoryMapper::toResponse)
 			.toList();
   }
 
   //* ── Get Category By Name And Parent ID ─────────────────────────────────────────────
   // This is For when the frontend explicitly needs exact lookups by name + parent
   @Transactional(readOnly = true)
+  @Cacheable(cacheNames = "categories",
+		  key = "#parentId != null ? 'name_parent:' + #name + ':' + #parentId : 'name_root:' + #name")
   public CategoryResponseDto getCategoryByNameAndParent(String name, UUID parentId) {
 	Category foundCategory;
 
@@ -178,7 +189,7 @@ public class CategoryService {
 			  .orElseThrow(() -> CategoryNotFound.byName(name));
 	}
 
-	return CategoryMapper.toResponse(foundCategory);
+	return categoryMapper.toResponse(foundCategory);
   }
 
   //! ═════════════════════════════════════ Helper ══════════════════════════════════════

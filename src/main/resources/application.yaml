@@ -7,6 +7,10 @@ logging:
 spring:
   application:
     name: product-management
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000ms # 1 hour in milliseconds
 
   main:
     banner-mode: off
@@ -65,8 +69,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
-  cache:
-    type: redis
+
 
 # ── Actuator (health checks) ──────────────────────────────────────────────────────────
 management:

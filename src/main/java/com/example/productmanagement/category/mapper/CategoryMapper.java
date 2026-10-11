@@ -2,24 +2,16 @@ package com.example.productmanagement.category.mapper;
 
 import com.example.productmanagement.category.dto.CategoryResponseDto;
 import com.example.productmanagement.category.entity.Category;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class CategoryMapper {
+import java.util.List;
 
-  public static CategoryResponseDto toResponse(Category category) {
+@Mapper(componentModel = "spring")
+public interface CategoryMapper {
 
-	if (category == null) {
-	  return null;
-	}
+  @Mapping(source = "parent.id", target = "parentId")
+  CategoryResponseDto toResponse(Category category);
 
-	return new CategoryResponseDto(
-			category.getId(),
-			category.getName(),
-			category.getParent() != null ? category.getParent().getId() : null,
-			category.getChildren(),
-			category.getCreatedAt(),
-			category.getUpdatedAt()
-	);
-  }
+  List<CategoryResponseDto> toResponseList(List<Category> categories);
 }

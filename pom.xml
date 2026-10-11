@@ -29,6 +29,7 @@
         <mapstruct.version>1.6.2</mapstruct.version>
         <springdoc.version>3.1.0</springdoc.version>
         <elasticsearch.version>8.13.4</elasticsearch.version>
+        <org.mapstruct.version>1.6.3</org.mapstruct.version>
     </properties>
 
     <!-- ================================================================= -->
@@ -240,6 +241,13 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${org.mapstruct.version}</version>
+        </dependency>
+
+
     </dependencies>
 
     <!-- ================================================================= -->
@@ -325,6 +333,29 @@
                 </dependencies>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source> <!-- Match your Java version -->
+                    <target>17</target>
+                    <annotationProcessorPaths>
+                        <!-- MapStruct Processor -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.5.5.Final</version>
+                        </path>
+                        <!-- Lombok Processor (Keep this if you use Lombok) -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.30</version> <!-- Match your Lombok version -->
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
