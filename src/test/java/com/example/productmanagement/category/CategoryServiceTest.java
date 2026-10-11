@@ -3,6 +3,7 @@ package com.example.productmanagement.category;
 import com.example.productmanagement.category.dto.CategoryRequestDto;
 import com.example.productmanagement.category.dto.CategoryResponseDto;
 import com.example.productmanagement.category.entity.Category;
+import com.example.productmanagement.category.mapper.CategoryMapper;
 import com.example.productmanagement.category.repository.CategoryRepository;
 import com.example.productmanagement.category.service.CategoryService;
 import com.example.productmanagement.exception.DuplicateCategory;
@@ -24,8 +25,11 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for the CategoryService.
+ * <p>
  * These tests verify the business logic of the CategoryService in isolation.
+ * <p>
  * We use Mockito to mock the CategoryRepository. This prevents the tests from
+ * <p>
  * connecting to a real database. It makes the tests run in milliseconds.
  */
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +39,9 @@ public class CategoryServiceTest {
   // The repository is mocked. It does not connect to PostgreSQL.
   @Mock
   private CategoryRepository categoryRepository;
+
+  @Mock
+  private CategoryMapper categoryMapper;
 
   // The service is injected with the mocked repository.
   @InjectMocks
@@ -93,6 +100,7 @@ public class CategoryServiceTest {
 
   /**
    * Test: Create fails when the name already exists under the same parent.
+   * <p>
    * Expected: DuplicateCategory exception is thrown. Save is never called.
    */
   @Test
@@ -106,6 +114,10 @@ public class CategoryServiceTest {
 	// Mock save to return the exact object passed to it.
 	when(categoryRepository.save(any(Category.class)))
 			.thenAnswer(invocation -> invocation.getArgument(0));
+
+	when(categoryMapper.toResponse(any(Category.class)))
+			.thenReturn(new CategoryResponseDto(
+					categoryId, "Laptops", parentId, null, null, null));
 
 	// Act
 	CategoryResponseDto response = categoryService.createCategory(request);
@@ -159,8 +171,11 @@ public class CategoryServiceTest {
 
   /**
    * Tests the update method when a circular hierarchy is created.
+   * <p>
    * Scenario: The user tries to move a category under its own descendant.
+   * <p>
    * Expected Result: The service throws IllegalArgumentException.
+   * <p>
    * The repository save method is never called.
    */
   @Test
@@ -191,29 +206,24 @@ public class CategoryServiceTest {
   @Test
   @DisplayName("Update succeeds when moving category to root")
   void updateCategory_ShouldSucceed_WhenMovingToRoot() {
-	Category existingCategory = mock(Category.class);
-	when(existingCategory.getId()).thenReturn(categoryId);
 
-	Category currentParent = mock(Category.class);
-	when(currentParent.getId()).thenReturn(parentId);
-	when(existingCategory.getParent()).thenReturn(currentParent);
+	// The service does not read any field of the entity in this flow.
+	// request.parentId() is null, so the parent-change block is skipped.
+	// We keep a mock only because we need to verify setParent(null).
+	Category existingCategory = mock(Category.class);
 
 	// Create a request with a null parent ID.
 	CategoryRequestDto rootRequest = new CategoryRequestDto("Laptops", null);
 
 	// Mock the repository to find the existing category.
 	when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(existingCategory));
-
 	// Mock the root duplicate check to return false
 	when(categoryRepository.existsByNameAndParentIsNullAndIdNot("Laptops", categoryId)).thenReturn(false);
-
 	when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
 	categoryService.updateCategory(categoryId, rootRequest);
 
 	// Assert: Verify the parent was set to null.
 	verify(existingCategory).setParent(null);
-
 	// Verify: Ensure the save method was called with the updated entity.
 	verify(categoryRepository).save(existingCategory);
   }
