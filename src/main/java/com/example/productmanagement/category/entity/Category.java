@@ -1,11 +1,9 @@
 package com.example.productmanagement.category.entity;
 
 import jakarta.persistence.*;
-import lombok.Generated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,8 +19,7 @@ import java.util.UUID;
 public class Category {
 
   @Id
-  @Generated
-  @ColumnDefault("gen_random_uuid()")
+  @GeneratedValue(strategy = GenerationType.UUID)
   @Column(nullable = false)
   private UUID id;
 

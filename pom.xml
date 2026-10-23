@@ -29,7 +29,6 @@
         <mapstruct.version>1.6.2</mapstruct.version>
         <springdoc.version>3.1.0</springdoc.version>
         <elasticsearch.version>8.13.4</elasticsearch.version>
-        <org.mapstruct.version>1.6.3</org.mapstruct.version>
     </properties>
 
     <!-- ================================================================= -->
@@ -146,7 +145,12 @@
         <!-- 5. TESTING                                                    -->
         <!-- ───────────────────────────────────────────────────────────── -->
         <!-- Note: Spring Boot 4.x modularizes test starters for precise dependency control -->
-
+        <dependency>
+            <groupId>org.flywaydb.flyway-test-extensions</groupId>
+            <artifactId>flyway-spring-test</artifactId>
+            <version>10.0.0</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Core Test Framework (JUnit 5, Mockito, AssertJ) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -244,25 +248,17 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>${org.mapstruct.version}</version>
+            <version>${mapstruct.version}</version>
         </dependency>
-
-
     </dependencies>
 
-    <!-- ================================================================= -->
-    <!-- BUILD CONFIGURATION & PLUGINS                                     -->
-    <!-- ================================================================= -->
     <build>
         <plugins>
-
-            <!-- 1. Spring Boot Maven Plugin: Packages the app as an executable JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <excludes>
-                        <!-- Exclude Lombok from the final packaged JAR to reduce size -->
                         <exclude>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
@@ -271,42 +267,6 @@
                 </configuration>
             </plugin>
 
-            <!-- 2. Maven Compiler Plugin: Configures Java 21 and Annotation Processors -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <annotationProcessorPaths>
-                        <!-- Lombok must be processed first -->
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                        <!-- CRITICAL: Binding to make Lombok and MapStruct play nicely together -->
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
-                        </path>
-                        <!-- MapStruct Processor: Generates DTO mapping implementations -->
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
-                        </path>
-                        <!-- Spring Configuration Processor: Generates metadata for application.yml autocomplete -->
-                        <path>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-configuration-processor</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
-            <!-- 3. Asciidoctor Plugin: Generates HTML documentation from Spring REST Docs -->
             <plugin>
                 <groupId>org.asciidoctor</groupId>
                 <artifactId>asciidoctor-maven-plugin</artifactId>
@@ -336,27 +296,32 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
                 <configuration>
-                    <source>17</source> <!-- Match your Java version -->
-                    <target>17</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <annotationProcessorPaths>
-                        <!-- MapStruct Processor -->
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>1.5.5.Final</version>
-                        </path>
-                        <!-- Lombok Processor (Keep this if you use Lombok) -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.30</version> <!-- Match your Lombok version -->
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>
